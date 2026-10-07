@@ -1,7 +1,7 @@
 import argparse
 import numpy as np
 import argparse
-from plotly.graph_objects import Scatter3d, Figure
+from plotly.graph_objects import Scatter, Scatter3d, Figure
 import json
 
 main_options = """
@@ -23,25 +23,33 @@ def parse_matrix(s):
     return np.array(json.loads(s))
     
 def create_plot(A):
-    A = np.vstack([np.zeros(A.shape[1]), A])
+    A = np.atleast_2d(A)
+    cols = A.shape[1]
+    if cols not in (2, 3):
+        print(f"(plot skipped: need 2 or 3 columns, got {cols})")
+        return
+    A = np.vstack([np.zeros(cols), A])
     fig = Figure()
-    fig.add_trace(Scatter3d(x=A[:,0], y=A[:,1], z=A[:,2], mode='lines+markers'))
+    if cols == 2:
+        fig.add_trace(Scatter(x=A[:,0], y=A[:,1], mode='lines+markers'))
+    else:
+        fig.add_trace(Scatter3d(x=A[:,0], y=A[:,1], z=A[:,2], mode='lines+markers'))
     fig.show()
 
 def matrix_addition(A, B):
     return np.add(np.array(A), np.array(B))
 
-def matrix_subtraction():
+def matrix_subtraction(A, B):
     return np.subtract(np.array(A), np.array(B))
 
 def matrix_multiplication(A, B):
-    return np.multiply(np.array(A), np.array(B))
+    return np.matmul(np.array(A), np.array(B))
 
 def matrix_scaling(A, num):
     return np.array(A) * num
 
 def matrix_determinant(A):
-    return np.linalg.det(A)
+    return round(np.linalg.det(A))
 
 def main():
     parser = argparse.ArgumentParser(description='Matrix operations')
